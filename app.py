@@ -82,8 +82,12 @@ def handle_date():
         return "✅ /handle_date endpoint reachable (GET for debug)"
 
     date = request.form.get('SpeechResult', '').strip()
-    # ✅ Try to get 'aid' from both query string and form body
     appointment_id = request.args.get('aid') or request.form.get('aid')
+
+    # 🔍 Debug
+    print("🧾 Received date:", date)
+    print("🆔 Received appointment_id:", appointment_id)
+
     response = VoiceResponse()
 
     if date and appointment_id:
@@ -101,6 +105,7 @@ def handle_date():
         response.redirect(f'/handle_date?aid={appointment_id or ""}')
 
     return Response(str(response), mimetype='text/xml')
+
 
 @app.route("/handle_time", methods=['POST', 'GET'])
 def handle_time():
