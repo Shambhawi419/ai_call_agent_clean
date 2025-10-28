@@ -5,7 +5,7 @@ import openai, os, sqlite3
 # ---------------- APP CONFIG ---------------- #
 app = Flask(__name__)
 
-# Load API keys from environment variables (configured in Render)
+# Load API keys from environment variables
 openai.api_key = os.getenv("OPENAI_API_KEY")
 TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
 TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
@@ -31,9 +31,12 @@ def init_db():
 init_db()
 
 # ---------------- ROUTES ---------------- #
-@app.route("/voice", methods=['POST'])
+@app.route("/voice", methods=['POST', 'GET'])
 def voice():
     """Handle incoming calls and ask for the user's name."""
+    if request.method == 'GET':
+        return "✅ /voice endpoint reachable (GET for debug)"
+
     response = VoiceResponse()
     gather = Gather(input='speech', action='/handle_name', method='POST')
     gather.say("Hello! This is your AI assistant. Please tell me your name to book an appointment.")
@@ -41,12 +44,17 @@ def voice():
     response.redirect('/voice')  # repeat if no input
     return Response(str(response), mimetype='text/xml')
 
-@app.route("/handle_name", methods=['POST'])
+
+@app.route("/handle_name", methods=['POST', 'GET'])
 def handle_name():
+    """Capture the user's name and ask for appointment date."""
+    if request.method == 'GET':
+        return "✅ /handle_name endpoint reachable (GET for debug)"
+
     print("🧩 Form Data Received:", request.form)
     print("🧩 JSON Data Received:", request.json)
-    name = request.form.get('SpeechResult', '').strip()
 
+    name = request.form.get('SpeechResult', '').strip()
     response = VoiceResponse()
 
     if name:
@@ -66,9 +74,13 @@ def handle_name():
 
     return Response(str(response), mimetype='text/xml')
 
-@app.route("/handle_date", methods=['POST'])
+
+@app.route("/handle_date", methods=['POST', 'GET'])
 def handle_date():
     """Capture date and ask for time."""
+    if request.method == 'GET':
+        return "✅ /handle_date endpoint reachable (GET for debug)"
+
     date = request.form.get('SpeechResult', '').strip()
     appointment_id = request.args.get('aid')
     response = VoiceResponse()
@@ -89,9 +101,13 @@ def handle_date():
 
     return Response(str(response), mimetype='text/xml')
 
-@app.route("/handle_time", methods=['POST'])
+
+@app.route("/handle_time", methods=['POST', 'GET'])
 def handle_time():
     """Capture time and ask for reason."""
+    if request.method == 'GET':
+        return "✅ /handle_time endpoint reachable (GET for debug)"
+
     time = request.form.get('SpeechResult', '').strip()
     appointment_id = request.args.get('aid')
     response = VoiceResponse()
@@ -112,9 +128,13 @@ def handle_time():
 
     return Response(str(response), mimetype='text/xml')
 
-@app.route("/handle_reason", methods=['POST'])
+
+@app.route("/handle_reason", methods=['POST', 'GET'])
 def handle_reason():
     """Capture reason and confirm appointment."""
+    if request.method == 'GET':
+        return "✅ /handle_reason endpoint reachable (GET for debug)"
+
     reason = request.form.get('SpeechResult', '').strip()
     appointment_id = request.args.get('aid')
     response = VoiceResponse()
@@ -140,9 +160,24 @@ def handle_reason():
 
     return Response(str(response), mimetype='text/xml')
 
+
 @app.route('/')
 def home():
     return "✅ AI Call Agent Running Successfully!"
+
+
+@app.route('/debug')
+def debug():
+    """Shows all available routes."""
+    return {
+        "status": "running",
+        "routes": [str(rule) for rule in app.url_map.iter_rules()]
+    }
+@app.route("/debug", methods=["GET"])
+def debug():
+    """List all available routes for debugging."""
+    routes = [str(rule) for rule in app.url_map.iter_rules()]
+    return "<br>".join(routes)
 
 # ---------------- RUN APP ---------------- #
 if __name__ == "__main__":
