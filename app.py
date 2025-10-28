@@ -173,11 +173,7 @@ def debug():
         "status": "running",
         "routes": [str(rule) for rule in app.url_map.iter_rules()]
     }
-@app.route("/debug", methods=["GET"])
-def debug():
-    """List all available routes for debugging."""
-    routes = [str(rule) for rule in app.url_map.iter_rules()]
-    return "<br>".join(routes)
+
 
 # ---------------- RUN APP ---------------- #
 if __name__ == "__main__":
