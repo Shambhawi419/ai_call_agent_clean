@@ -43,8 +43,10 @@ def voice():
 
 @app.route("/handle_name", methods=['POST'])
 def handle_name():
-    """Capture name and ask for appointment date."""
+    print("🧩 Form Data Received:", request.form)
+    print("🧩 JSON Data Received:", request.json)
     name = request.form.get('SpeechResult', '').strip()
+
     response = VoiceResponse()
 
     if name:
